@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -124,9 +122,9 @@
         };
 
         const spellingWords = {
-            elementary: ["cat", "dog", "tree", "house", "happy", "friend", "school", "play", "book", "water", "jump", "run", "blue", "green", "smile"],
-            middle: ["curious", "enormous", "adventure", "mystery", "education", "technology", "beautiful", "excellent", "important", "necessary", "different", "favorite", "together", "surprise", "careful"],
-            high: ["accommodation", "conscientious", "extraordinary", "entrepreneurial", "philanthropy", "sophisticated", "acknowledge", "privilege", "hierarchy", "independence", "necessary", "occasion", "recommend", "rhythm", "separate"]
+            elementary: ["because", "where", "beautiful", "friend", "every", "people", "through", "thought", "favorite", "different", "remember", "which", "said", "busy", "might", "should", "brought", "caught", "enough", "believe"],
+            middle: ["necessary", "embarrass", "separate", "definitely", "occurrence", "conscience", "recommend", "millennium", "grateful", "calendar", "fascinate", "privilege", "achievement", "reference", "experience", "government", "appreciate", "environment", "restaurant", "tomorrow"],
+            high: ["accommodate", "conscientious", "pharmaceutical", "entrepreneur", "chrysanthemum", "bureaucracy", "idiosyncrasy", "reconnaissance", "mischievous", "Mediterranean", "millennium", "occasionally", "personnel", "surveillance", "symmetrical", "pneumonia", "extraordinary", "rhythm", "psychology", "encyclopedia"]
         };
 
         let state = {
@@ -147,13 +145,11 @@
             isLoading: true
         };
 
-        // Check if cloud storage is available (only in Claude.ai artifacts)
         const hasCloudStorage = typeof window.storage !== 'undefined';
 
         async function loadData() {
             try {
                 if (hasCloudStorage) {
-                    // Use cloud storage
                     const kidsData = await window.storage.get('screentime-kids', false);
                     const tasksData = await window.storage.get('screentime-tasks', false);
                     const sessionsData = await window.storage.get('screentime-sessions', false);
@@ -164,7 +160,6 @@
                     if (sessionsData) state.sessions = JSON.parse(sessionsData.value);
                     if (settingsData) state.settings = JSON.parse(settingsData.value);
                 } else {
-                    // Fallback to localStorage
                     const savedKids = localStorage.getItem('st-kids');
                     const savedTasks = localStorage.getItem('st-completed-tasks');
                     const savedSessions = localStorage.getItem('st-sessions');
@@ -188,13 +183,11 @@
         async function saveData() {
             try {
                 if (hasCloudStorage) {
-                    // Use cloud storage
                     await window.storage.set('screentime-kids', JSON.stringify(state.kids), false);
                     await window.storage.set('screentime-tasks', JSON.stringify(state.completedTasks), false);
                     await window.storage.set('screentime-sessions', JSON.stringify(state.sessions), false);
                     await window.storage.set('screentime-settings', JSON.stringify(state.settings), false);
                 } else {
-                    // Fallback to localStorage
                     localStorage.setItem('st-kids', JSON.stringify(state.kids));
                     localStorage.setItem('st-completed-tasks', JSON.stringify(state.completedTasks));
                     localStorage.setItem('st-sessions', JSON.stringify(state.sessions));
@@ -278,7 +271,7 @@
             const level = getGradeLevel(kid.grade);
             const problems = mathProblems[level];
             
-            const numProblems = 10;
+            const numProblems = 20;
             const questions = [];
             
             for (let i = 0; i < numProblems; i++) {
@@ -327,7 +320,7 @@
             const selectedWords = [];
             const usedIndices = new Set();
             
-            while (selectedWords.length < 5) {
+            while (selectedWords.length < 10) {
                 const index = Math.floor(Math.random() * wordList.length);
                 if (!usedIndices.has(index)) {
                     usedIndices.add(index);
@@ -860,7 +853,7 @@
                                 class="p-6 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition text-center">
                                 <div class="text-blue-600 text-4xl mb-2">${icons.calculator}</div>
                                 <div class="font-semibold text-gray-800 text-lg">Math Practice</div>
-                                <div class="text-sm text-gray-600">Solve 10 problems</div>
+                                <div class="text-sm text-gray-600">Solve 20 problems</div>
                                 <div class="text-green-600 font-bold mt-2">+${state.settings.bonusMinutesPerTask} min</div>
                             </button>
                             
@@ -876,7 +869,7 @@
                                 class="p-6 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition text-center">
                                 <div class="text-purple-600 text-4xl mb-2">${icons.clipboard}</div>
                                 <div class="font-semibold text-gray-800 text-lg">Spelling</div>
-                                <div class="text-sm text-gray-600">Spell 5 words</div>
+                                <div class="text-sm text-gray-600">Spell 10 words</div>
                                 <div class="text-green-600 font-bold mt-2">+${state.settings.bonusMinutesPerTask} min</div>
                             </button>
                         </div>
