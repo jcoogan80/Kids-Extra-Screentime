@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Screen Time Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 to-blue-50 min-h-screen">
+    <div id="app" class="p-4 md:p-6 max-w-7xl mx-auto"></div>
+
+    <script>
+        const icons = {
+            clock: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+            user: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>',
+            check: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>',
+            plus: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>',
+            book: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>',
+            calculator: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>',
+            clipboard: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>',
+            star: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>',
+            trophy: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>',
+            play: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+            pause: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+            edit: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>',
+            trash: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>',
+            close: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>'
+        };
+
+        const mathProblems = {
+            elementary: [
+                { type: 'addition', range: [1, 20], template: (a, b) => `${a} + ${b}`, answer: (a, b) => a + b },
+                { type: 'subtraction', range: [1, 20], template: (a, b) => `${Math.max(a,b)} - ${Math.min(a,b)}`, answer: (a, b) => Math.max(a,b) - Math.min(a,b) },
+                { type: 'multiplication', range: [1, 10], template: (a, b) => `${a} × ${b}`, answer: (a, b) => a * b }
+            ],
+            middle: [
+                { type: 'multiplication', range: [6, 15], template: (a, b) => `${a} × ${b}`, answer: (a, b) => a * b },
+                { type: 'division', range: [2, 12], template: (a, b) => `${a * b} ÷ ${b}`, answer: (a, b) => a },
+                { type: 'fractions', range: [1, 10], template: (a, b) => `${a}/${b} + ${a}/${b}`, answer: (a, b) => (2*a)/b }
+            ],
+            high: [
+                { type: 'algebra', range: [1, 20], template: (a, b) => `Solve: ${b}x + ${a} = ${a + b * 3}`, answer: () => 3 },
+                { type: 'percentages', range: [10, 50], template: (a, b) => `What is ${a}% of ${b * 10}?`, answer: (a, b) => (a * b * 10) / 100 },
+                { type: 'order', range: [1, 10], template: (a, b) => `${a} + ${b} × 2`, answer: (a, b) => a + (b * 2) }
+            ]
+        };
+
+        const readingPassages = {
+            elementary: [
+                { 
+                    text: "The little puppy wagged its tail happily. It loved to play fetch with the red ball. Every morning, the puppy would run to find its favorite toy.",
+                    questions: [
+                        { q: "What did the puppy like to play?", a: "fetch", options: ["fetch", "hide and seek", "tag"] },
+                        { q: "What color was the ball?", a: "red", options: ["red", "blue", "yellow"] }
+                    ]
+                },
+                {
+                    text: "Sarah planted seeds in her garden. She watered them every day. After two weeks, tiny green sprouts began to appear. Sarah was excited to see her plants growing.",
+                    questions: [
+                        { q: "What did Sarah plant?", a: "seeds", options: ["seeds", "flowers", "trees"] },
+                        { q: "How long until sprouts appeared?", a: "two weeks", options: ["one week", "two weeks", "one month"] }
+                    ]
+                }
+            ],
+            middle: [
+                {
+                    text: "Photosynthesis is the process by which plants convert sunlight into energy. Plants use chlorophyll in their leaves to capture light energy. This energy is then used to convert carbon dioxide and water into glucose and oxygen.",
+                    questions: [
+                        { q: "What do plants convert sunlight into?", a: "energy", options: ["energy", "water", "soil"] },
+                        { q: "What chemical helps capture light?", a: "chlorophyll", options: ["oxygen", "chlorophyll", "carbon"] }
+                    ]
+                },
+                {
+                    text: "The water cycle describes how water moves through Earth's atmosphere. Water evaporates from oceans and lakes, forming clouds. Eventually, this water returns to Earth as precipitation in the form of rain or snow.",
+                    questions: [
+                        { q: "What forms when water evaporates?", a: "clouds", options: ["clouds", "rain", "ice"] },
+                        { q: "What is water returning to Earth called?", a: "precipitation", options: ["evaporation", "precipitation", "condensation"] }
+                    ]
+                }
+            ],
+            high: [
+                {
+                    text: "Shakespeare's influence on modern English is immeasurable. He invented over 1,700 words that are still in use today, including 'assassination', 'lonely', and 'eyeball'. His plays explored complex themes of human nature that remain relevant centuries later.",
+                    questions: [
+                        { q: "How many words did Shakespeare invent?", a: "over 1700", options: ["over 1700", "about 500", "over 5000"] },
+                        { q: "What did his plays explore?", a: "human nature", options: ["human nature", "politics", "science"] }
+                    ]
+                },
+                {
+                    text: "Climate change refers to long-term shifts in global temperatures and weather patterns. While Earth's climate has changed throughout history, current changes are occurring at an unprecedented rate, largely due to human activities that release greenhouse gases.",
+                    questions: [
+                        { q: "What is causing current climate change rate?", a: "human activities", options: ["natural cycles", "human activities", "solar radiation"] },
+                        { q: "What do human activities release?", a: "greenhouse gases", options: ["oxygen", "greenhouse gases", "water vapor"] }
+                    ]
+                }
+            ]
+        };
+
+        const spellingWords = {
+            elementary: ["cat", "dog", "tree", "house", "happy", "friend", "school", "play", "book", "water"],
+            middle: ["curious", "enormous", "adventure", "mystery", "education", "technology", "beautiful", "excellent", "important", "necessary"],
+            high: ["accommodation", "conscientious", "extraordinary", "entrepreneurial", "philanthropy", "sophisticated", "acknowledge", "privilege", "hierarchy", "independence"]
+        };
+
+        let state = {
+            view: 'parent',
+            selectedKid: null,
+            kids: [],
+            completedTasks: [],
+            sessions: [],
+            settings: {
+                bonusMinutesPerTask: 15
+            },
+            showModal: false,
+            modalType: null,
+            editingItem: null,
+            activeTimers: {},
+            currentActivity: null,
+            activityProgress: null
+        };
+
+        function loadData() {
+            try {
+                const savedKids = localStorage.getItem('st-kids');
+                const savedTasks = localStorage.getItem('st-completed-tasks');
+                const savedSessions = localStorage.getItem('st-sessions');
+                const savedSettings = localStorage.getItem('st-settings');
+                
+                if (savedKids) state.kids = JSON.parse(savedKids);
+                if (savedTasks) state.completedTasks = JSON.parse(savedTasks);
+                if (savedSessions) state.sessions = JSON.parse(savedSessions);
+                if (savedSettings) state.settings = JSON.parse(savedSettings);
+            } catch (e) {
+                console.log('No saved data');
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('st-kids', JSON.stringify(state.kids));
+            localStorage.setItem('st-completed-tasks', JSON.stringify(state.completedTasks));
+            localStorage.setItem('st-sessions', JSON.stringify(state.sessions));
+            localStorage.setItem('st-settings', JSON.stringify(state.settings));
+        }
+
+        function getTodayString() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function getGradeLevel(grade) {
+            if (!grade) return 'elementary';
+            const gradeNum = parseInt(grade);
+            if (gradeNum <= 5) return 'elementary';
+            if (gradeNum <= 8) return 'middle';
+            return 'high';
+        }
+
+        function getKidStats(kidId) {
+            const today = getTodayString();
+            const kid = state.kids.find(k => k.id === kidId);
+            if (!kid) return null;
+
+            const todaySessions = state.sessions.filter(s => s.kidId === kidId && s.date === today);
+            const usedMinutes = todaySessions.reduce((sum, s) => sum + s.minutes, 0);
+            const todayTasks = state.completedTasks.filter(t => t.kidId === kidId && t.date === today);
+            const bonusMinutes = todayTasks.length * state.settings.bonusMinutesPerTask;
+            const totalMinutes = kid.dailyLimit + bonusMinutes;
+            const remainingMinutes = Math.max(0, totalMinutes - usedMinutes);
+
+            return {
+                usedMinutes,
+                bonusMinutes,
+                totalMinutes,
+                remainingMinutes,
+                todayTasks: todayTasks.length,
+                isActive: state.activeTimers[kidId] ? true : false
+            };
+        }
+
+        function startTimer(kidId) {
+            if (state.activeTimers[kidId]) return;
+            
+            state.activeTimers[kidId] = {
+                startTime: Date.now(),
+                interval: setInterval(() => render(), 1000)
+            };
+            render();
+        }
+
+        function stopTimer(kidId) {
+            if (!state.activeTimers[kidId]) return;
+            
+            const elapsed = Math.floor((Date.now() - state.activeTimers[kidId].startTime) / 60000);
+            clearInterval(state.activeTimers[kidId].interval);
+            delete state.activeTimers[kidId];
+            
+            if (elapsed > 0) {
+                state.sessions.push({
+                    id: Date.now(),
+                    kidId,
+                    date: getTodayString(),
+                    minutes: elapsed,
+                    timestamp: new Date().toISOString()
+                });
+                saveData();
+            }
+            render();
+        }
+
+        function getActiveMinutes(kidId) {
+            if (!state.activeTimers[kidId]) return 0;
+            return Math.floor((Date.now() - state.activeTimers[kidId].startTime) / 60000);
+        }
+
+        function generateMathActivity(kid) {
+            const level = getGradeLevel(kid.grade);
+            const problems = mathProblems[level];
+            const problemType = problems[Math.floor(Math.random() * problems.length)];
+            
+            const numProblems = 5;
+            const questions = [];
+            
+            for (let i = 0; i < numProblems; i++) {
+                const [min, max] = problemType.range;
+                const a = Math.floor(Math.random() * (max - min + 1)) + min;
+                const b = Math.floor(Math.random() * (max - min + 1)) + min;
+                questions.push({
+                    question: problemType.template(a, b),
+                    answer: problemType.answer(a, b).toString(),
+                    userAnswer: ''
+                });
+            }
+            
+            return {
+                type: 'math',
+                kidId: kid.id,
+                title: 'Math Practice',
+                description: `Solve ${numProblems} math problems`,
+                questions,
+                currentQuestion: 0,
+                startTime: Date.now()
+            };
+        }
+
+        function generateReadingActivity(kid) {
+            const level = getGradeLevel(kid.grade);
+            const passages = readingPassages[level];
+            const passage = passages[Math.floor(Math.random() * passages.length)];
+            
+            return {
+                type: 'reading',
+                kidId: kid.id,
+                title: 'Reading Comprehension',
+                description: 'Read the passage and answer questions',
+                passage: passage.text,
+                questions: passage.questions.map(q => ({ ...q, userAnswer: '' })),
+                currentQuestion: 0,
+                startTime: Date.now()
+            };
+        }
+
+        function generateSpellingActivity(kid) {
+            const level = getGradeLevel(kid.grade);
+            const wordList = spellingWords[level];
+            const words = [];
+            
+            for (let i = 0; i < 5; i++) {
+                const word = wordList[Math.floor(Math.random() * wordList.length)];
+                words.push({
+                    word,
+                    shown: false,
+                    userAnswer: ''
+                });
+            }
+            
+            return {
+                type: 'spelling',
+                kidId: kid.id,
+                title: 'Spelling Practice',
+                description: 'Study the word, then spell it correctly',
+                words,
+                currentWord: 0,
+                phase: 'study',
+                startTime: Date.now()
+            };
+        }
+
+        function startActivity(kid, activityType) {
+            if (activityType === 'math') {
+                state.currentActivity = generateMathActivity(kid);
+            } else if (activityType === 'reading') {
+                state.currentActivity = generateReadingActivity(kid);
+            } else if (activityType === 'spelling') {
+                state.currentActivity = generateSpellingActivity(kid);
+            }
+            render();
+        }
+
+        function submitAnswer(answer) {
+            const activity = state.currentActivity;
+            
+            if (activity.type === 'math') {
+                activity.questions[activity.currentQuestion].userAnswer = answer;
+                if (activity.currentQuestion < activity.questions.length - 1) {
+                    activity.currentQuestion++;
+                } else {
+                    checkActivityCompletion();
+                }
+            } else if (activity.type === 'reading') {
+                activity.questions[activity.currentQuestion].userAnswer = answer;
+                if (activity.currentQuestion < activity.questions.length - 1) {
+                    activity.currentQuestion++;
+                } else {
+                    checkActivityCompletion();
+                }
+            }
+            render();
+        }
+
+        function nextSpellingPhase() {
+            const activity = state.currentActivity;
+            const word = activity.words[activity.currentWord];
+            
+            if (activity.phase === 'study') {
+                word.shown = true;
+                activity.phase = 'spell';
+            } else {
+                if (activity.currentWord < activity.words.length - 1) {
+                    activity.currentWord++;
+                    activity.phase = 'study';
+                } else {
+                    checkActivityCompletion();
+                }
+            }
+            render();
+        }
+
+        function checkActivityCompletion() {
+            const activity = state.currentActivity;
+            let correct = 0;
+            let total = 0;
+            
+            if (activity.type === 'math') {
+                activity.questions.forEach(q => {
+                    total++;
+                    if (parseFloat(q.userAnswer) === parseFloat(q.answer)) {
+                        correct++;
+                    }
+                });
+            } else if (activity.type === 'reading') {
+                activity.questions.forEach(q => {
+                    total++;
+                    if (q.userAnswer === q.a) {
+                        correct++;
+                    }
+                });
+            } else if (activity.type === 'spelling') {
+                activity.words.forEach(w => {
+                    total++;
+                    if (w.userAnswer.toLowerCase() === w.word.toLowerCase()) {
+                        correct++;
+                    }
+                });
+            }
+            
+            const percentage = (correct / total) * 100;
+            const passed = percentage >= 70;
+            
+            if (passed) {
+                state.completedTasks.push({
+                    id: Date.now(),
+                    kidId: activity.kidId,
+                    type: activity.type,
+                    date: getTodayString(),
+                    score: percentage,
+                    timeSpent: Math.floor((Date.now() - activity.startTime) / 1000),
+                    timestamp: new Date().toISOString()
+                });
+                saveData();
+            }
+            
+            state.activityProgress = { correct, total, percentage, passed };
+            render();
+        }
+
+        function closeActivity() {
+            state.currentActivity = null;
+            state.activityProgress = null;
+            render();
+        }
+
+        function openModal(type, item = null) {
+            state.modalType = type;
+            state.editingItem = item ? {...item} : null;
+            state.showModal = true;
+            render();
+        }
+
+        function closeModal() {
+            state.showModal = false;
+            state.modalType = null;
+            state.editingItem = null;
+            render();
+        }
+
+        function saveKid() {
+            const kid = state.editingItem;
+            if (!kid.name || !kid.grade || !kid.dailyLimit) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (kid.id) {
+                const index = state.kids.findIndex(k => k.id === kid.id);
+                state.kids[index] = kid;
+            } else {
+                kid.id = Date.now();
+                kid.avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${kid.name}`;
+                state.kids.push(kid);
+            }
+
+            saveData();
+            closeModal();
+        }
+
+        function deleteKid(kidId) {
+            if (confirm('Delete this child? All their data will be removed.')) {
+                state.kids = state.kids.filter(k => k.id !== kidId);
+                state.completedTasks = state.completedTasks.filter(t => t.kidId !== kidId);
+                state.sessions = state.sessions.filter(s => s.kidId !== kidId);
+                saveData();
+                render();
+            }
+        }
+
+        function renderActivityScreen() {
+            const activity = state.currentActivity;
+            const kid = state.kids.find(k => k.id === activity.kidId);
+            
+            if (state.activityProgress) {
+                const { correct, total, percentage, passed } = state.activityProgress;
+                return `
+                    <div class="fixed inset-0 bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center p-4 z-50">
+                        <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-8 text-center">
+                            <div class="${passed ? 'text-green-500' : 'text-red-500'} text-6xl mb-4">
+                                ${passed ? '🎉' : '😞'}
+                            </div>
+                            <h2 class="text-3xl font-bold mb-4">${passed ? 'Great Job!' : 'Keep Practicing!'}</h2>
+                            <p class="text-xl mb-6">You got ${correct} out of ${total} correct (${percentage.toFixed(0)}%)</p>
+                            
+                            ${passed ? `
+                                <div class="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-6">
+                                    <p class="text-green-800 font-bold text-xl">
+                                        🎁 Earned ${state.settings.bonusMinutesPerTask} Bonus Minutes!
+                                    </p>
+                                </div>
+                            ` : `
+                                <p class="text-gray-600 mb-6">You need 70% or higher to earn bonus time. Try again!</p>
+                            `}
+                            
+                            <button onclick="closeActivity()" 
+                                class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold">
+                                ${passed ? 'Awesome!' : 'Try Another Activity'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (activity.type === 'math') {
+                const q = activity.questions[activity.currentQuestion];
+                return `
+                    <div class="fixed inset-0 bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center p-4 z-50">
+                        <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full p-8">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-2xl font-bold text-gray-800">Math Practice</h2>
+                                <button onclick="closeActivity()" class="text-gray-500 hover:text-gray-700">
+                                    ${icons.close}
+                                </button>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>Question ${activity.currentQuestion + 1} of ${activity.questions.length}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full transition-all" 
+                                        style="width: ${((activity.currentQuestion) / activity.questions.length) * 100}%"></div>
+                                </div>
+                            </div>
+
+                            <div class="text-center py-12">
+                                <div class="text-6xl font-bold text-gray-800 mb-8">${q.question} = ?</div>
+                                <input type="number" 
+                                    id="mathAnswer"
+                                    placeholder="Your answer"
+                                    class="text-4xl text-center w-48 px-4 py-3 border-4 border-blue-300 rounded-lg focus:ring-4 focus:ring-blue-500 focus:outline-none"
+                                    onkeypress="if(event.key === 'Enter') document.getElementById('submitMath').click()">
+                            </div>
+
+                            <button id="submitMath" onclick="submitAnswer(document.getElementById('mathAnswer').value)" 
+                                class="w-full px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-bold text-xl">
+                                Submit Answer
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (activity.type === 'reading') {
+                const q = activity.questions[activity.currentQuestion];
+                return `
+                    <div class="fixed inset-0 bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center p-4 z-50 overflow-y-auto">
+                        <div class="bg-white rounded-lg shadow-2xl max-w-3xl w-full p-8 my-8">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-2xl font-bold text-gray-800">Reading Comprehension</h2>
+                                <button onclick="closeActivity()" class="text-gray-500 hover:text-gray-700">
+                                    ${icons.close}
+                                </button>
+                            </div>
+
+                            ${activity.currentQuestion === 0 ? `
+                                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-6">
+                                    <p class="text-lg leading-relaxed text-gray-800">${activity.passage}</p>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="mb-6">
+                                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>Question ${activity.currentQuestion + 1} of ${activity.questions.length}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full transition-all" 
+                                        style="width: ${((activity.currentQuestion) / activity.questions.length) * 100}%"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-6">
+                                <p class="text-2xl font-bold text-gray-800 mb-4">${q.q}</p>
+                                <div class="space-y-3">
+                                    ${q.options.map(option => `
+                                        <button onclick="submitAnswer('${option}')" 
+                                            class="w-full p-4 text-left border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition text-lg">
+                                            ${option}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (activity.type === 'spelling') {
+                const word = activity.words[activity.currentWord];
+                return `
+                    <div class="fixed inset-0 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center p-4 z-50">
+                        <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full p-8">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-2xl font-bold text-gray-800">Spelling Practice</h2>
+                                <button onclick="closeActivity()" class="text-gray-500 hover:text-gray-700">
+                                    ${icons.close}
+                                </button>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>Word ${activity.currentWord + 1} of ${activity.words.length}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-purple-500 h-2 rounded-full transition-all" 
+                                        style="width: ${((activity.currentWord) / activity.words.length) * 100}%"></div>
+                                </div>
+                            </div>
+
+                            ${activity.phase === 'study' ? `
+                                <div class="text-center py-12">
+                                    <p class="text-gray-600 mb-4">Study this word:</p>
+                                    <div class="text-7xl font-bold text-purple-600 mb-8">${word.word}</div>
+                                    <button onclick="nextSpellingPhase()" 
+                                        class="px-8 py-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-bold text-xl">
+                                        Ready to Spell It!
+                                    </button>
+                                </div>
+                            ` : `
+                                <div class="text-center py-12">
+                                    <p class="text-gray-600 mb-8">Spell the word you just studied:</p>
+                                    <input type="text" 
+                                        id="spellingAnswer"
+                                        placeholder="Type the word"
+                                        class="text-4xl text-center w-full max-w-md px-4 py-3 border-4 border-purple-300 rounded-lg focus:ring-4 focus:ring-purple-500 focus:outline-none mb-8"
+                                        onkeypress="if(event.key === 'Enter') { state.currentActivity.words[${activity.currentWord}].userAnswer = this.value; nextSpellingPhase(); }">
+                                    <button onclick="state.currentActivity.words[${activity.currentWord}].userAnswer = document.getElementById('spellingAnswer').value; nextSpellingPhase();" 
+                                        class="px-8 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-bold text-xl">
+                                        Submit
+                                    </button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderParentView() {
+            return `
+                <div class="space-y-6">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h1 class="text-3xl font-bold text-gray-800">Parent Dashboard</h1>
+                                <p class="text-gray-600 mt-1">Manage screen time for the whole family</p>
+                            </div>
+                            <button onclick="openModal('addKid')" 
+                                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2">
+                                ${icons.plus} Add Child
+                            </button>
+                        </div>
+
+                        <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="font-semibold text-purple-900">Bonus Time per Task</p>
+                                    <p class="text-sm text-purple-700">${state.settings.bonusMinutesPerTask} minutes (need 70% or higher)</p>
+                                </div>
+                                <button onclick="openModal('settings')" 
+                                    class="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm">
+                                    Change
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${state.kids.length === 0 ? `
+                        <div class="bg-white rounded-lg shadow p-12 text-center">
+                            <div class="text-gray-400 mb-4">${icons.user}</div>
+                            <p class="text-gray-600">No children added yet. Click "Add Child" to get started!</p>
+                        </div>
+                    ` : `
+                        <div class="grid md:grid-cols-2 gap-6">
+                            ${state.kids.map(kid => {
+                                const stats = getKidStats(kid.id);
+                                const activeMinutes = getActiveMinutes(kid.id);
+                                const totalUsed = stats.usedMinutes + activeMinutes;
+                                
+                                return `
+                                    <div class="bg-white rounded-lg shadow-lg p-6">
+                                        <div class="flex items-start justify-between mb-4">
+                                            <div class="flex items-center gap-3">
+                                                <img src="${kid.avatar}" class="w-16 h-16 rounded-full border-2 border-purple-200">
+                                                <div>
+                                                    <h3 class="text-xl font-bold text-gray-800">${kid.name}</h3>
+                                                    <p class="text-sm text-gray-600">${kid.grade}</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <button onclick="openModal('editKid', ${JSON.stringify(kid).replace(/"/g, '&quot;')})" 
+                                                    class="p-2 text-blue-600 hover:bg-blue-50 rounded">
+                                                    ${icons.edit}
+                                                </button>
+                                                <button onclick="deleteKid(${kid.id})" 
+                                                    class="p-2 text-red-600 hover:bg-red-50 rounded">
+                                                    ${icons.trash}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="space-y-3">
+                                            <div>
+                                                <div class="flex justify-between text-sm mb-1">
+                                                    <span class="text-gray-600">Screen Time Today</span>
+                                                    <span class="font-semibold ${totalUsed >= stats.totalMinutes ? 'text-red-600' : 'text-gray-800'}">
+                                                        ${totalUsed} / ${stats.totalMinutes} min
+                                                    </span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-3">
+                                                    <div class="h-3 rounded-full transition-all ${totalUsed >= stats.totalMinutes ? 'bg-red-500' : 'bg-green-500'}" 
+                                                        style="width: ${Math.min(100, (totalUsed / stats.totalMinutes) * 100)}%">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="grid grid-cols-3 gap-3 text-center">
+                                                <div class="bg-blue-50 rounded p-2">
+                                                    <div class="text-xl font-bold text-blue-600">${kid.dailyLimit}</div>
+                                                    <div class="text-xs text-blue-700">Base</div>
+                                                </div>
+                                                <div class="bg-green-50 rounded p-2">
+                                                    <div class="text-xl font-bold text-green-600">+${stats.bonusMinutes}</div>
+                                                    <div class="text-xs text-green-700">Bonus</div>
+                                                </div>
+                                                <div class="bg-purple-50 rounded p-2">
+                                                    <div class="text-xl font-bold text-purple-600">${stats.remainingMinutes - activeMinutes}</div>
+                                                    <div class="text-xs text-purple-700">Left</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex gap-2">
+                                                ${stats.isActive ? `
+                                                    <button onclick="stopTimer(${kid.id})" 
+                                                        class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-2">
+                                                        ${icons.pause} Stop (${activeMinutes}m)
+                                                    </button>
+                                                ` : `
+                                                    <button onclick="startTimer(${kid.id})" 
+                                                        class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
+                                                        ${stats.remainingMinutes <= 0 ? 'disabled' : ''}>
+                                                        ${icons.play} Start
+                                                    </button>
+                                                `}
+                                                <button onclick="state.selectedKid = ${kid.id}; state.view = 'kid'; render();" 
+                                                    class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                                                    Activities
+                                                </button>
+                                            </div>
+
+                                            <div class="bg-yellow-50 rounded p-3 border border-yellow-200">
+                                                <span class="text-sm text-yellow-800">
+                                                    ${icons.star} ${stats.todayTasks} tasks completed today
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        function renderKidView() {
+            const kid = state.kids.find(k => k.id === state.selectedKid);
+            if (!kid) {
+                state.view = 'parent';
+                render();
+                return '';
+            }
+
+            const stats = getKidStats(kid.id);
+            const todayTasks = state.completedTasks.filter(t => t.kidId === kid.id && t.date === getTodayString());
+
+            return `
+                <div class="space-y-6">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <button onclick="state.view = 'parent'; state.selectedKid = null; render();" 
+                            class="text-purple-600 hover:text-purple-700 mb-4 flex items-center gap-2">
+                            ← Back to Parent View
+                        </button>
+
+                        <div class="flex items-center gap-4 mb-6">
+                            <img src="${kid.avatar}" class="w-20 h-20 rounded-full border-4 border-purple-200">
+                            <div>
+                                <h1 class="text-3xl font-bold text-gray-800">${kid.name}'s Dashboard</h1>
+                                <p class="text-gray-600">${kid.grade}</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg p-6 text-white">
+                            <div class="text-center">
+                                <div class="text-6xl font-bold mb-2">${stats.remainingMinutes}</div>
+                                <div class="text-xl opacity-90">Minutes Remaining Today</div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-4 mt-6">
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold">${stats.usedMinutes}</div>
+                                    <div class="text-sm opacity-80">Used</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold">${stats.bonusMinutes}</div>
+                                    <div class="text-sm opacity-80">Bonus</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold">${stats.totalMinutes}</div>
+                                    <div class="text-sm opacity-80">Total</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Earn More Screen Time!</h2>
+                        <p class="text-gray-600 mb-4">Complete activities to earn ${state.settings.bonusMinutesPerTask} bonus minutes each (need 70% or higher)</p>
+                        
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <button onclick="startActivity(${JSON.stringify(kid).replace(/"/g, '&quot;')}, 'math')" 
+                                class="p-6 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition text-center">
+                                <div class="text-blue-600 text-4xl mb-2">${icons.calculator}</div>
+                                <div class="font-semibold text-gray-800 text-lg">Math Practice</div>
+                                <div class="text-sm text-gray-600">Solve 5 problems</div>
+                                <div class="text-green-600 font-bold mt-2">+${state.settings.bonusMinutesPerTask} min</div>
+                            </button>
+                            
+                            <button onclick="startActivity(${JSON.stringify(kid).replace(/"/g, '&quot;')}, 'reading')" 
+                                class="p-6 border-2 border-green-200 rounded-lg hover:bg-green-50 transition text-center">
+                                <div class="text-green-600 text-4xl mb-2">${icons.book}</div>
+                                <div class="font-semibold text-gray-800 text-lg">Reading</div>
+                                <div class="text-sm text-gray-600">Read & answer</div>
+                                <div class="text-green-600 font-bold mt-2">+${state.settings.bonusMinutesPerTask} min</div>
+                            </button>
+                            
+                            <button onclick="startActivity(${JSON.stringify(kid).replace(/"/g, '&quot;')}, 'spelling')" 
+                                class="p-6 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition text-center">
+                                <div class="text-purple-600 text-4xl mb-2">${icons.clipboard}</div>
+                                <div class="font-semibold text-gray-800 text-lg">Spelling</div>
+                                <div class="text-sm text-gray-600">Spell 5 words</div>
+                                <div class="text-green-600 font-bold mt-2">+${state.settings.bonusMinutesPerTask} min</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    ${todayTasks.length > 0 ? `
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">${icons.trophy} Completed Today (${todayTasks.length})</h3>
+                            <div class="space-y-2">
+                                ${todayTasks.map(task => `
+                                    <div class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <div class="flex items-center gap-3">
+                                            <div class="text-green-600">${icons.check}</div>
+                                            <div>
+                                                <div class="font-semibold text-gray-800 capitalize">${task.type}</div>
+                                                <div class="text-sm text-green-600">Score: ${task.score.toFixed(0)}%</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-green-600 font-bold">+${state.settings.bonusMinutesPerTask} min</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderModal() {
+            if (!state.showModal) return '';
+
+            if (state.modalType === 'addKid' || state.modalType === 'editKid') {
+                const kid = state.editingItem || { name: '', grade: '', dailyLimit: 60 };
+                return `
+                    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onclick="if(event.target === this) closeModal()">
+                        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onclick="event.stopPropagation()">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6">${kid.id ? 'Edit' : 'Add'} Child</h2>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                    <input type="text" value="${kid.name || ''}" 
+                                        onchange="state.editingItem.name = this.value"
+                                        placeholder="Child's name"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                                    <select value="${kid.grade || ''}" 
+                                        onchange="state.editingItem.grade = this.value"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                        <option value="">Select grade</option>
+                                        <option value="Kindergarten">Kindergarten</option>
+                                        ${[1,2,3,4,5,6,7,8,9,10,11,12].map(g => `<option value="${g}">${g}${g===1?'st':g===2?'nd':g===3?'rd':'th'} Grade</option>`).join('')}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Daily Time Limit (minutes)</label>
+                                    <input type="number" value="${kid.dailyLimit || 60}" min="15" max="480"
+                                        onchange="state.editingItem.dailyLimit = parseInt(this.value)"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3 mt-6">
+                                <button onclick="saveKid()" 
+                                    class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold">
+                                    Save
+                                </button>
+                                <button onclick="closeModal()" 
+                                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (state.modalType === 'settings') {
+                return `
+                    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onclick="if(event.target === this) closeModal()">
+                        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onclick="event.stopPropagation()">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6">Settings</h2>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Bonus Minutes per Task</label>
+                                    <input type="number" value="${state.settings.bonusMinutesPerTask}" min="5" max="60"
+                                        onchange="state.settings.bonusMinutesPerTask = parseInt(this.value); saveData();"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                    <p class="text-xs text-gray-500 mt-1">Earned when scoring 70% or higher</p>
+                                </div>
+                            </div>
+
+                            <button onclick="closeModal()" 
+                                class="w-full mt-6 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold">
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return '';
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            
+            app.innerHTML = `
+                ${state.currentActivity ? renderActivityScreen() : ''}
+                
+                <div class="fade-in">
+                    ${state.view === 'parent' ? renderParentView() : renderKidView()}
+                </div>
+
+                ${renderModal()}
+
+                <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 class="font-semibold text-blue-900 mb-2">📱 How to Use:</h3>
+                    <ol class="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                        <li><strong>Kids:</strong> Complete math, reading, or spelling activities to earn bonus screen time</li>
+                        <li><strong>Parents:</strong> Start/stop timers when kids use devices</li>
+                        <li><strong>Score 70% or higher</strong> on activities to earn ${state.settings.bonusMinutesPerTask} bonus minutes</li>
+                        <li><strong>Activities adapt</strong> to each child's grade level automatically</li>
+                    </ol>
+                </div>
+            `;
+        }
+
+        loadData();
+        if (state.kids.length === 0) {
+            state.editingItem = { name: '', grade: '', dailyLimit: 60 };
+        }
+        render();
+    </script>
+</body>
+</html>
